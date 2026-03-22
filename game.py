@@ -14,7 +14,7 @@ import time
 
 from units.player import Player
 from units.bullet import PlayerBullet, EnemyBullet
-from units.enemy import BasicEnemy, FastEnemy, TankEnemy, ShooterEnemy
+from units.enemy import BasicEnemy, FastEnemy, TankEnemy, ShooterEnemy, BossEnemy
 from units.powerup import HealthPowerUp, SpeedPowerUp, MultiShotPowerUp, PowerUpBase
 from units.particle import Particle, ExplosionEffect
 from camera import Camera
@@ -143,8 +143,8 @@ class Game:
         # Enemies
         for enemy in self.enemies:
             enemy.update(self.WORLD_SIZE, player_pos=self.player.position)
-            # Collect enemy bullets from ShooterEnemy
-            if isinstance(enemy, ShooterEnemy) and enemy.pending_bullets:
+            # Collect enemy bullets from enemies that shoot (ShooterEnemy, BossEnemy)
+            if hasattr(enemy, "pending_bullets") and enemy.pending_bullets:
                 for pos, angle in enemy.pending_bullets:
                     self.enemy_bullets.append(EnemyBullet(pos, angle))
 
@@ -227,17 +227,31 @@ class Game:
     def _on_enemy_killed(self, enemy):
         """Handle enemy death: score, explosion, powerup drop.
 
+        Boss enemies trigger a massive explosion and always drop a powerup.
+
         Args:
             enemy: The enemy that was killed.
         """
         self.player.score += enemy.score_value
-        self.camera.trigger_shake(4)
-        self.particles.extend(
-            ExplosionEffect.create(enemy.position, enemy.color, count=15, speed_range=(2, 6))
-        )
-        # Random powerup drop
-        if random.random() < self.POWERUP_DROP_CHANCE:
+
+        # Boss gets a massive explosion and guaranteed powerup
+        if isinstance(enemy, BossEnemy):
+            self.camera.trigger_shake(20)
+            self.particles.extend(
+                ExplosionEffect.create(enemy.position, (255, 100, 50), count=40, speed_range=(3, 10))
+            )
+            self.particles.extend(
+                ExplosionEffect.create(enemy.position, (255, 255, 100), count=20, speed_range=(2, 7))
+            )
             self._spawn_powerup(enemy.position)
+        else:
+            self.camera.trigger_shake(4)
+            self.particles.extend(
+                ExplosionEffect.create(enemy.position, enemy.color, count=15, speed_range=(2, 6))
+            )
+            # Random powerup drop
+            if random.random() < self.POWERUP_DROP_CHANCE:
+                self._spawn_powerup(enemy.position)
 
     def _spawn_powerup(self, position):
         """Spawn a random powerup at the given position.

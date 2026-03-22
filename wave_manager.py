@@ -8,7 +8,7 @@ tougher enemy types.
 import pygame
 import random
 import math
-from units.enemy import BasicEnemy, FastEnemy, TankEnemy, ShooterEnemy
+from units.enemy import BasicEnemy, FastEnemy, TankEnemy, ShooterEnemy, BossEnemy
 
 
 class WaveManager:
@@ -90,6 +90,10 @@ class WaveManager:
             tank_count = max(1, (n - 3))
             for _ in range(tank_count):
                 enemies.append(TankEnemy(self._random_edge_position()))
+
+        # Boss every 5 waves
+        if n % 5 == 0:
+            enemies.append(BossEnemy(self._random_edge_position(), n))
 
         return enemies
 

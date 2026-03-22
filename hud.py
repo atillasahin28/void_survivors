@@ -130,18 +130,36 @@ class HUD:
     def _draw_wave_announcement(self, surface):
         """Draw a large wave announcement that fades over 2 seconds.
 
+        Boss waves (every 5th) show a special red warning.
+
         Args:
             surface: pygame.Surface to draw on.
         """
         elapsed = time.time() - self.wave_announce_time
-        if elapsed < 2.0:
-            alpha = max(0, 1 - elapsed / 2.0)
+        if elapsed < 2.5:
+            alpha = max(0, 1 - elapsed / 2.5)
             screen_w = surface.get_width()
             screen_h = surface.get_height()
-            text = self.font_large.render(f"WAVE {self.wave_announce_number}", True,
-                                          (int(255 * alpha), int(255 * alpha), int(100 * alpha)))
+
+            is_boss_wave = self.wave_announce_number % 5 == 0
+            if is_boss_wave:
+                color = (int(255 * alpha), int(50 * alpha), int(50 * alpha))
+                label = f"BOSS WAVE {self.wave_announce_number}"
+            else:
+                color = (int(255 * alpha), int(255 * alpha), int(100 * alpha))
+                label = f"WAVE {self.wave_announce_number}"
+
+            text = self.font_large.render(label, True, color)
             surface.blit(text, (screen_w / 2 - text.get_width() / 2,
                                 screen_h / 3 - text.get_height() / 2))
+
+            # Extra subtitle for boss waves
+            if is_boss_wave and elapsed < 2.0:
+                sub_alpha = max(0, 1 - elapsed / 2.0)
+                sub = self.font_medium.render("A powerful enemy approaches...", True,
+                                              (int(200 * sub_alpha), int(80 * sub_alpha), int(80 * sub_alpha)))
+                surface.blit(sub, (screen_w / 2 - sub.get_width() / 2,
+                                   screen_h / 3 + 30))
 
     def draw_title_screen(self, surface):
         """Draw the title/welcome screen with game name and controls.

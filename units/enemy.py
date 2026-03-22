@@ -340,3 +340,173 @@ class ShooterEnemy(Unit):
 
     def _get_max_health(self):
         return 40
+
+
+class BossEnemy(Unit):
+    """A powerful boss that spawns every 5 waves.
+
+    Alternates between two phases:
+    - CHASE: Charges directly at the player at increasing speed.
+    - SHOOT: Stops and fires a spread of bullets in all directions.
+
+    Large, high health, with a spinning visual and a wide health bar.
+    Awards 100 points on kill.
+    """
+
+    CHASE_DURATION = 3.0
+    SHOOT_DURATION = 2.0
+    SPREAD_COOLDOWN = 0.4
+
+    def __init__(self, position, wave_number):
+        """Initialize a BossEnemy that scales with the wave number.
+
+        Args:
+            position: pygame.Vector2 spawn position.
+            wave_number: Current wave number (used to scale health).
+        """
+        super().__init__(position, pygame.Vector2(0, 0), radius=40, color=(255, 50, 50))
+        base_health = 400
+        self.health = base_health + (wave_number * 50)
+        self.max_health = self.health
+        self.max_speed = 2.5
+        self.score_value = 100
+        self.contact_damage = 35
+
+        # Phase system: alternates between chasing and shooting
+        self.phase = "chase"
+        self.phase_timer = 0
+        self.spin_angle = 0
+        self.last_spread_time = 0
+        self.pending_bullets = []
+
+    def update(self, world_size, **kwargs):
+        """Alternate between chasing the player and shooting spreads.
+
+        During CHASE phase, the boss accelerates toward the player.
+        During SHOOT phase, the boss stops and fires bullet rings.
+
+        Args:
+            world_size: pygame.Vector2 with world dimensions.
+            **kwargs: Must contain 'player_pos' as pygame.Vector2.
+        """
+        player_pos = kwargs.get("player_pos")
+        self.pending_bullets = []
+        self.phase_timer += 1 / 60  # assumes 60 FPS
+        self.spin_angle += 0.05
+
+        if self.phase == "chase":
+            self._do_chase(player_pos)
+            if self.phase_timer >= self.CHASE_DURATION:
+                self.phase = "shoot"
+                self.phase_timer = 0
+                self.speed *= 0.1  # brake hard
+        elif self.phase == "shoot":
+            self._do_shoot(player_pos)
+            self.speed *= 0.9  # slow to a stop
+            if self.phase_timer >= self.SHOOT_DURATION:
+                self.phase = "chase"
+                self.phase_timer = 0
+
+        self.step()
+        self.stay_on_screen(world_size)
+
+    def _do_chase(self, player_pos):
+        """Accelerate toward the player.
+
+        Args:
+            player_pos: pygame.Vector2 of the player's position.
+        """
+        if player_pos:
+            direction = player_pos - self.position
+            if direction.length() > 0:
+                target = direction.normalize() * self.max_speed
+                self.speed += (target - self.speed) * 0.06
+
+    def _do_shoot(self, player_pos):
+        """Fire a ring of bullets outward at regular intervals.
+
+        Args:
+            player_pos: pygame.Vector2 of the player's position (unused,
+                        boss shoots in all directions).
+        """
+        now = time.time()
+        if now - self.last_spread_time >= self.SPREAD_COOLDOWN:
+            self.last_spread_time = now
+            num_bullets = 10
+            for i in range(num_bullets):
+                angle = self.spin_angle + (2 * math.pi * i / num_bullets)
+                bullet_pos = self.position + pygame.Vector2(
+                    math.cos(angle) * self.radius,
+                    math.sin(angle) * self.radius
+                )
+                self.pending_bullets.append((pygame.Vector2(bullet_pos), angle))
+
+    def take_damage(self, amount):
+        """Reduce health; kill if depleted.
+
+        Args:
+            amount: Damage to apply.
+        """
+        self.health -= amount
+        if self.health <= 0:
+            self.kill()
+
+    def draw(self, surface, camera_offset):
+        """Draw as a large spinning spiky circle with a glowing core.
+
+        The boss has an outer ring of spikes that rotates, an inner
+        core that pulses, and a wide health bar underneath.
+
+        Args:
+            surface: pygame.Surface to draw on.
+            camera_offset: pygame.Vector2 camera translation.
+        """
+        screen = self.screen_pos(camera_offset)
+
+        # Outer spikes (rotating)
+        num_spikes = 8
+        for i in range(num_spikes):
+            angle = self.spin_angle + (2 * math.pi * i / num_spikes)
+            inner_point = screen + pygame.Vector2(
+                math.cos(angle) * (self.radius - 8),
+                math.sin(angle) * (self.radius - 8)
+            )
+            outer_point = screen + pygame.Vector2(
+                math.cos(angle) * (self.radius + 12),
+                math.sin(angle) * (self.radius + 12)
+            )
+            spike_color = (255, 100, 100) if self.phase == "chase" else (255, 200, 50)
+            pygame.draw.line(surface, spike_color, inner_point, outer_point, 3)
+
+        # Outer ring
+        ring_color = (200, 30, 30) if self.phase == "chase" else (200, 160, 30)
+        pygame.draw.circle(surface, ring_color, screen, self.radius, 4)
+
+        # Inner core (pulses)
+        pulse = 0.8 + 0.2 * math.sin(time.time() * 6)
+        core_radius = int((self.radius - 10) * pulse)
+        core_color = (180, 20, 20) if self.phase == "chase" else (180, 140, 20)
+        pygame.draw.circle(surface, core_color, screen, core_radius)
+
+        # Inner eye
+        pygame.draw.circle(surface, (255, 255, 200), screen, 8)
+        pygame.draw.circle(surface, (60, 0, 0), screen, 4)
+
+        # Wide health bar below the boss
+        bar_w = self.radius * 3
+        bar_h = 6
+        x = screen.x - bar_w / 2
+        y = screen.y + self.radius + 10
+        ratio = max(0, self.health / self.max_health)
+        pygame.draw.rect(surface, (40, 0, 0), (x - 1, y - 1, bar_w + 2, bar_h + 2))
+        pygame.draw.rect(surface, (80, 0, 0), (x, y, bar_w, bar_h))
+        bar_color = (255, 50, 50) if ratio > 0.5 else (255, 150, 0) if ratio > 0.25 else (255, 255, 0)
+        pygame.draw.rect(surface, bar_color, (x, y, bar_w * ratio, bar_h))
+
+        # "BOSS" label above
+        font = pygame.font.SysFont("Arial", 14, bold=True)
+        label = font.render("BOSS", True, (255, 80, 80))
+        surface.blit(label, (screen.x - label.get_width() / 2, screen.y - self.radius - 20))
+
+    def _get_max_health(self):
+        return self.max_health

@@ -17,7 +17,7 @@ You control a spaceship in a dark void. Enemies spawn in waves from the edges of
 | 2+   | Fast (orange diamonds) — quick zigzaggers |
 | 3+   | Shooter (green hexagons) — keeps distance, fires bullets at you |
 | 4+   | Tank (purple circles) — slow, large, high health |
-
+| 5, 10, 15... | Boss (red spiky) — too many bullets, gets stronger each time |
 ## Controls
 
 | Key | Action |
