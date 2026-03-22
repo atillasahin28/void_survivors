@@ -75,6 +75,30 @@ cd void_survivors
 python main.py
 ```
 
+## Multiplayer
+ 
+The game supports networked multiplayer using zmq (REQ/REP pattern). One player runs the server, others connect as clients. All players share the same arena and fight enemies together.
+ 
+### Start the server
+ 
+```bash
+python3 mp_server.py 2345
+```
+ 
+### Each player connects as a client (in a separate terminal)
+ 
+```bash
+python3 mp_client.py Alice 2345 127.0.0.1
+python3 mp_client.py Bob 2345 127.0.0.1
+```
+ 
+Replace `127.0.0.1` with the server's IP address if playing on different computers. The first argument is your player name, the second is the port, the third is the server's IP.
+ 
+### How it works
+ 
+The server owns the game state and runs all physics and collision logic. Each frame, clients send an `Action` (their keyboard/mouse input) to the server. The server processes all actions, updates the game, and sends back a snapshot of the full game state. Clients render this snapshot locally. This ensures all players see the same game.
+
+
 ## Project Structure
 
 ```
@@ -86,6 +110,9 @@ void_survivors/
 ├── camera.py              ← Smooth-follow camera with screen shake
 ├── wave_manager.py        ← Enemy wave spawning and difficulty
 ├── hud.py                 ← Score, health, wave display
+├── mp_server.py           ← Multiplayer server
+├── mp_client.py           ← Multiplayer client
+├── mp_action.py           ← Shared action class for client-server
 └── units/                 ← All game entities (polymorphism)
     ├── __init__.py
     ├── unit.py            ← Abstract base class for all entities
@@ -105,6 +132,8 @@ The game follows **object-oriented design with polymorphism** as the core patter
 - **`Camera`** — Smooth-follow camera that keeps the player centered, with screen shake support.
 - **`WaveManager`** — Strategy for enemy spawning, increasing difficulty each wave.
 - **`HUD`** — Screen-space UI rendering, decoupled from game logic.
+- **`ServerGame`** — Server-side game logic for multiplayer, reusing the same unit classes.
+- **`GameRenderer`** — Client-side rederer for multiplayer, draws game state from server snapshots.
 
 ### Class Hierarchy
 
@@ -117,6 +146,7 @@ Unit (ABC)
 ├── FastEnemy
 ├── TankEnemy
 ├── ShooterEnemy
+├── BossEnemy
 ├── PowerUpBase (ABC)
 │   ├── HealthPowerUp
 │   ├── SpeedPowerUp
