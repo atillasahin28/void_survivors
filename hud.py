@@ -191,6 +191,7 @@ class HUD:
             "WASD / Arrow Keys  —  Move",
             "Mouse  —  Aim",
             "Left Click / Space  —  Shoot",
+            "ESC - Pause"
         ]
         y = screen_h * 0.45
         for line in controls:
@@ -266,4 +267,31 @@ class HUD:
         surface.blit(score_text, (screen_w / 2 - score_text.get_width() / 2, screen_h / 3 + 60))
 
         restart_text = self.font_small.render("Press R to restart or Q to quit", True, (180, 180, 180))
+        surface.blit(restart_text, (screen_w / 2 - restart_text.get_width() / 2, screen_h / 3 + 100))
+
+    def draw_paused(self, surface, score, wave_number):
+        """Draw the game over screen.
+
+        Args:
+            surface: pygame.Surface to draw on.
+            score: Final score.
+            wave_number: Wave reached.
+        """
+        screen_w = surface.get_width()
+        screen_h = surface.get_height()
+
+        # Dimmed overlay
+        overlay = pygame.Surface((screen_w, screen_h))
+        overlay.set_alpha(150)
+        overlay.fill((0, 0, 0))
+        surface.blit(overlay, (0, 0))
+
+        # Game Over text
+        go_text = self.font_large.render("PAUSED", True, (255, 60, 60))
+        surface.blit(go_text, (screen_w / 2 - go_text.get_width() / 2, screen_h / 3))
+
+        score_text = self.font_medium.render(f"Score: {score}  |  Wave: {wave_number}", True, (255, 255, 255))
+        surface.blit(score_text, (screen_w / 2 - score_text.get_width() / 2, screen_h / 3 + 60))
+
+        restart_text = self.font_small.render("Press SPACE to continue, R to restart or Q to quit", True, (180, 180, 180))
         surface.blit(restart_text, (screen_w / 2 - restart_text.get_width() / 2, screen_h / 3 + 100))

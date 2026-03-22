@@ -58,7 +58,7 @@ class Game:
         self.powerups = []
         self.particles = []
 
-        # Game states: "title", "countdown", "playing", "game_over"
+        # Game states: "title", "countdown", "playing", "game_over", "paused"
         self.state = "title"
         self.countdown_start = 0
         self.last_wave = 0
@@ -100,6 +100,18 @@ class Game:
                         self.countdown_start = time.time()
                     elif event.key == pygame.K_q:
                         self.running = False
+                elif self.state == "playing":
+                    if event.key == pygame.K_ESCAPE:
+                        self.state = "paused"
+                elif self.state == "paused":
+                    if event.key == pygame.K_SPACE or event.key == pygame.K_RETURN:
+                        self.state = "playing"
+                    if event.key == pygame.K_q:
+                        self.running = False
+                    if event.key == pygame.K_r:
+                        self._init_game_state()
+                        self.state = "countdown"
+                        self.countdown_start = time.time()
 
     def _update_countdown(self):
         """Check if the countdown has finished and transition to playing."""
@@ -272,6 +284,9 @@ class Game:
         )
         self.camera.trigger_shake(15)
 
+    def _on_paused(self):
+        self.state = "paused"
+
     def _cleanup_dead(self):
         """Remove all dead units from their lists."""
         self.enemies = [e for e in self.enemies if e.alive]
@@ -314,6 +329,9 @@ class Game:
         elif self.state == "game_over":
             self.hud.draw_game_over(self.screen, self.player.score,
                                      self.wave_manager.get_wave_number())
+        elif self.state == "paused":
+            self.hud.draw_paused(self.screen, self.player.score,
+                                 self.wave_manager.get_wave_number())
         else:
             self.hud.draw(self.screen, self.player, self.wave_manager.get_wave_number())
 
