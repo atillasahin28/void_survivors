@@ -79,6 +79,8 @@ python main.py
  
 The game supports networked multiplayer using zmq (REQ/REP pattern). One player runs the server, others connect as clients. All players share the same arena and fight enemies together.
  
+![Multiplayer](multiplayer.gif)
+
 ### Start the server
  
 ```bash
