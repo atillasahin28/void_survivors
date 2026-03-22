@@ -56,7 +56,7 @@ Powerups drop randomly when you kill an enemy (30% chance):
 
 - Python 3.8 or higher
 - pip (Python package manager)
-- pygame (installed via requirements.txt)
+- pygame and pyzmq (installed via requirements.txt)
 
 ### Setup
 
@@ -97,7 +97,7 @@ This gives something like `192.168.1.42`. Share this IP with the other players.
 python3 mp_server.py 2345 0.0.0.0
 
 # Terminal 2: join your own server
-python3 mp_client.py Alice 2345 127.0.0.1
+python3 mp_client.py Alice 2345 192.168.1.42
 ```
 
 **Step 3 — Other players connect using the host's IP:**
