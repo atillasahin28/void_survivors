@@ -76,29 +76,38 @@ python main.py
 ```
 
 ## Multiplayer
- 
+
 The game supports networked multiplayer using zmq (REQ/REP pattern). One player runs the server, others connect as clients. All players share the same arena and fight enemies together.
- 
+
 ![Multiplayer](multiplayer.gif)
 
-### Start the server
- 
+### How to play multiplayer
+
+All players need to be on the **same network** (same WiFi). One player hosts the server, the others connect to it.
+
+**Step 1 — Host finds their IP address:**
 ```bash
-python3 mp_server.py 2345
+hostname -I
 ```
- 
-### Each player connects as a client (in a separate terminal)
- 
+This gives something like `192.168.1.42`. Share this IP with the other players.
+
+**Step 2 — Host starts the server and joins as a player (two terminals):**
 ```bash
+# Terminal 1: start the server
+python3 mp_server.py 2345 0.0.0.0
+
+# Terminal 2: join your own server
 python3 mp_client.py Alice 2345 127.0.0.1
-python3 mp_client.py Bob 2345 127.0.0.1
 ```
- 
-Replace `127.0.0.1` with the server's IP address if playing on different computers. The first argument is your player name, the second is the port, the third is the server's IP.
- 
-### How it works
- 
-The server owns the game state and runs all physics and collision logic. Each frame, clients send an `Action` (their keyboard/mouse input) to the server. The server processes all actions, updates the game, and sends back a snapshot of the full game state. Clients render this snapshot locally. This ensures all players see the same game.
+
+**Step 3 — Other players connect using the host's IP:**
+```bash
+python3 mp_client.py Bob 2345 192.168.1.42
+```
+
+Replace `Alice`/`Bob` with your name and `192.168.1.42` with the actual IP from step 1.
+
+Once everyone has joined, each player presses SPACE to ready up. The game starts after all players are ready.
 
 
 ## Project Structure
@@ -120,7 +129,7 @@ void_survivors/
     ├── unit.py            ← Abstract base class for all entities
     ├── player.py          ← Player (WASD + mouse aim)
     ├── bullet.py          ← PlayerBullet and EnemyBullet
-    ├── enemy.py           ← BasicEnemy, FastEnemy, TankEnemy, ShooterEnemy
+    ├── enemy.py           ← BasicEnemy, FastEnemy, TankEnemy, ShooterEnemy, BossEnemy
     ├── powerup.py         ← HealthPowerUp, SpeedPowerUp, MultiShotPowerUp
     └── particle.py        ← Particle effects and ExplosionEffect factory
 ```
@@ -135,7 +144,7 @@ The game follows **object-oriented design with polymorphism** as the core patter
 - **`WaveManager`** — Strategy for enemy spawning, increasing difficulty each wave.
 - **`HUD`** — Screen-space UI rendering, decoupled from game logic.
 - **`ServerGame`** — Server-side game logic for multiplayer, reusing the same unit classes.
-- **`GameRenderer`** — Client-side rederer for multiplayer, draws game state from server snapshots.
+- **`GameRenderer`** — Client-side renderer for multiplayer, draws game state from server snapshots.
 
 ### Class Hierarchy
 
