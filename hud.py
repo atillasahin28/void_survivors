@@ -6,6 +6,7 @@ active powerup indicators, and wave announcements on screen.
 
 import pygame
 import time
+import math
 
 
 class HUD:
@@ -28,6 +29,8 @@ class HUD:
         """Load fonts for HUD text rendering."""
         pygame.font.init()
         self.font_large = pygame.font.SysFont("Arial", 42, bold=True)
+        self.font_title = pygame.font.SysFont("Arial", 64, bold=True)
+        self.font_countdown = pygame.font.SysFont("Arial", 120, bold=True)
         self.font_medium = pygame.font.SysFont("Arial", 24, bold=True)
         self.font_small = pygame.font.SysFont("Arial", 18)
 
@@ -139,6 +142,86 @@ class HUD:
                                           (int(255 * alpha), int(255 * alpha), int(100 * alpha)))
             surface.blit(text, (screen_w / 2 - text.get_width() / 2,
                                 screen_h / 3 - text.get_height() / 2))
+
+    def draw_title_screen(self, surface):
+        """Draw the title/welcome screen with game name and controls.
+
+        Args:
+            surface: pygame.Surface to draw on.
+        """
+        screen_w = surface.get_width()
+        screen_h = surface.get_height()
+
+        # Dimmed background
+        overlay = pygame.Surface((screen_w, screen_h))
+        overlay.set_alpha(180)
+        overlay.fill((5, 5, 15))
+        surface.blit(overlay, (0, 0))
+
+        # Title with pulsing color
+        pulse = abs(math.sin(time.time() * 2))
+        title_color = (int(50 + 205 * pulse), int(200 * pulse), 255)
+        title_text = self.font_title.render("VOID SURVIVORS", True, title_color)
+        surface.blit(title_text, (screen_w / 2 - title_text.get_width() / 2, screen_h * 0.2))
+
+        # Subtitle
+        sub_text = self.font_medium.render("Survive the waves. How long can you last?", True, (180, 180, 200))
+        surface.blit(sub_text, (screen_w / 2 - sub_text.get_width() / 2, screen_h * 0.2 + 75))
+
+        # Controls list
+        controls = [
+            "WASD / Arrow Keys  —  Move",
+            "Mouse  —  Aim",
+            "Left Click / Space  —  Shoot",
+        ]
+        y = screen_h * 0.45
+        for line in controls:
+            ctrl_text = self.font_small.render(line, True, (150, 150, 170))
+            surface.blit(ctrl_text, (screen_w / 2 - ctrl_text.get_width() / 2, y))
+            y += 28
+
+        # Blinking "Press SPACE to start"
+        if int(time.time() * 2) % 2 == 0:
+            start_text = self.font_medium.render("Press SPACE to start", True, (255, 255, 100))
+            surface.blit(start_text, (screen_w / 2 - start_text.get_width() / 2, screen_h * 0.75))
+
+    def draw_countdown(self, surface, elapsed):
+        """Draw the countdown (3, 2, 1, GO!) before the game starts.
+
+        Args:
+            surface: pygame.Surface to draw on.
+            elapsed: Seconds since the countdown started.
+        """
+        screen_w = surface.get_width()
+        screen_h = surface.get_height()
+
+        if elapsed < 1.0:
+            number = "3"
+            color = (255, 80, 80)
+        elif elapsed < 2.0:
+            number = "2"
+            color = (255, 200, 50)
+        elif elapsed < 3.0:
+            number = "1"
+            color = (50, 255, 100)
+        else:
+            number = "GO!"
+            color = (0, 200, 255)
+
+        # Scale effect: number starts big and shrinks within each second
+        phase = elapsed % 1.0
+        scale = 1.0 + 0.3 * (1.0 - phase)
+        font_size = int(120 * scale)
+        font = pygame.font.SysFont("Arial", font_size, bold=True)
+
+        text = font.render(number, True, color)
+        surface.blit(text, (screen_w / 2 - text.get_width() / 2,
+                            screen_h / 2 - text.get_height() / 2))
+
+        # "Get ready" text above the number
+        ready_text = self.font_medium.render("Get ready...", True, (180, 180, 180))
+        surface.blit(ready_text, (screen_w / 2 - ready_text.get_width() / 2,
+                                  screen_h / 2 - 100))
 
     def draw_game_over(self, surface, score, wave_number):
         """Draw the game over screen.

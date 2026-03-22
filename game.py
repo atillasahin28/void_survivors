@@ -58,7 +58,9 @@ class Game:
         self.powerups = []
         self.particles = []
 
-        self.game_over = False
+        # Game states: "title", "countdown", "playing", "game_over"
+        self.state = "title"
+        self.countdown_start = 0
         self.last_wave = 0
 
     def run(self):
@@ -67,29 +69,43 @@ class Game:
             dt = self.clock.tick(60) / 1000.0  # delta time in seconds
             self._handle_events()
 
-            if not self.game_over:
+            if self.state == "playing":
                 self._handle_input()
                 self._update(dt)
                 self._check_collisions()
                 self._cleanup_dead()
+            elif self.state == "countdown":
+                self._update_countdown()
 
             self._render()
 
         pygame.quit()
 
     def _handle_events(self):
-        """Process pygame events (quit, resize, restart)."""
+        """Process pygame events (quit, resize, state transitions)."""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
             elif event.type == pygame.VIDEORESIZE:
                 self.camera.resize(event.size)
             elif event.type == pygame.KEYDOWN:
-                if self.game_over:
+                if self.state == "title":
+                    if event.key == pygame.K_SPACE or event.key == pygame.K_RETURN:
+                        self.state = "countdown"
+                        self.countdown_start = time.time()
+                elif self.state == "game_over":
                     if event.key == pygame.K_r:
                         self._init_game_state()
+                        self.state = "countdown"
+                        self.countdown_start = time.time()
                     elif event.key == pygame.K_q:
                         self.running = False
+
+    def _update_countdown(self):
+        """Check if the countdown has finished and transition to playing."""
+        elapsed = time.time() - self.countdown_start
+        if elapsed >= 3.0:
+            self.state = "playing"
 
     def _handle_input(self):
         """Process keyboard and mouse input for the player."""
@@ -236,7 +252,7 @@ class Game:
 
     def _on_game_over(self):
         """Trigger the game over state with a big explosion."""
-        self.game_over = True
+        self.state = "game_over"
         self.particles.extend(
             ExplosionEffect.create(self.player.position, (0, 200, 255), count=30, speed_range=(2, 8))
         )
@@ -276,7 +292,12 @@ class Game:
             self.player.draw(self.screen, offset)
 
         # HUD (screen-space, no camera offset)
-        if self.game_over:
+        if self.state == "title":
+            self.hud.draw_title_screen(self.screen)
+        elif self.state == "countdown":
+            elapsed = time.time() - self.countdown_start
+            self.hud.draw_countdown(self.screen, elapsed)
+        elif self.state == "game_over":
             self.hud.draw_game_over(self.screen, self.player.score,
                                      self.wave_manager.get_wave_number())
         else:
