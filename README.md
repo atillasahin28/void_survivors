@@ -3,6 +3,8 @@
 A top-down space arena survival shooter built with [pygame](https://www.pygame.org/).  
 Survive increasingly difficult waves of enemies, collect powerups, and aim for the highest score.
 
+![Gameplay](gameplay.gif)
+
 ## Gameplay
 
 You control a spaceship in a dark void. Enemies spawn in waves from the edges of the arena, each wave harder than the last. Use your mouse to aim and shoot, and your keyboard to dodge. Killed enemies have a chance to drop powerups that heal you, boost your speed, or give you a triple-shot spread.
