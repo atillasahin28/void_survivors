@@ -33,6 +33,7 @@ class BasicEnemy(Unit):
         self.health = 50
         self.max_speed = 2.0
         self.score_value = 10
+        self.contact_damage = 15
 
     def update(self, world_size, **kwargs):
         """Steer toward the player and move.
@@ -111,6 +112,7 @@ class FastEnemy(Unit):
         self.health = 25
         self.max_speed = 4.0
         self.score_value = 15
+        self.contact_damage = 10
         self.zigzag_timer = 0
         self.zigzag_offset = 0
 
@@ -182,9 +184,10 @@ class TankEnemy(Unit):
             position: pygame.Vector2 spawn position.
         """
         super().__init__(position, pygame.Vector2(0, 0), radius=24, color=(150, 50, 200))
-        self.health = 150
+        self.health = 225
         self.max_speed = 1.0
         self.score_value = 25
+        self.contact_damage = 25
 
     def update(self, world_size, **kwargs):
         """Slowly pursue the player.
@@ -228,12 +231,12 @@ class TankEnemy(Unit):
         bar_h = 4
         x = screen.x - bar_w / 2
         y = screen.y - self.radius - 10
-        ratio = max(0, self.health / 150)
+        ratio = max(0, self.health / 225)
         pygame.draw.rect(surface, (60, 0, 0), (x, y, bar_w, bar_h))
         pygame.draw.rect(surface, (180, 80, 220), (x, y, bar_w * ratio, bar_h))
 
     def _get_max_health(self):
-        return 150
+        return 225
 
 
 class ShooterEnemy(Unit):
@@ -256,6 +259,7 @@ class ShooterEnemy(Unit):
         self.health = 40
         self.max_speed = 1.5
         self.score_value = 20
+        self.contact_damage = 10
         self.last_shoot_time = time.time() + random.uniform(0, 1)
         self.pending_bullets = []
 

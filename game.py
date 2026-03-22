@@ -187,7 +187,7 @@ class Game:
             if not enemy.alive:
                 continue
             if enemy.collides_with(self.player):
-                if self.player.take_damage(15):
+                if self.player.take_damage(enemy.contact_damage):
                     self.camera.trigger_shake(10)
                     self.particles.extend(
                         ExplosionEffect.create(self.player.position, (0, 150, 255), count=8)
