@@ -25,6 +25,10 @@ class HUD:
         self.wave_announce_number = 0
         self._init_fonts()
 
+        self.message = None
+        self.message_time = 0
+        self.message_duration = 2.0
+
     def _init_fonts(self):
         """Load fonts for HUD text rendering."""
         pygame.font.init()
@@ -56,6 +60,7 @@ class HUD:
         self._draw_wave_indicator(surface, wave_number)
         self._draw_powerup_indicators(surface, player)
         self._draw_wave_announcement(surface)
+        self._draw_message(surface)
 
     def _draw_health_bar(self, surface, player):
         """Draw the main health bar at the top-left.
@@ -161,6 +166,35 @@ class HUD:
                 surface.blit(sub, (screen_w / 2 - sub.get_width() / 2,
                                    screen_h / 3 + 30))
 
+    def show_message(self, text, duration=2.0):
+        self.message = text
+        self.message_time = time.time()
+        self.message_duration = duration
+
+    def _draw_message(self, surface):
+        if not self.message:
+            return
+
+        elapsed = time.time() - self.message_time
+        if elapsed > self.message_duration:
+            self.message = None
+            return
+
+        # Fade out effect
+        alpha = 1 - (elapsed / self.message_duration)
+
+        screen_w = surface.get_width()
+        screen_h = surface.get_height()
+
+        color = (int(255 * alpha), int(255 * alpha), int(255 * alpha))
+        text = self.font_medium.render(self.message, True, color)
+
+        surface.blit(
+            text,
+            (screen_w / 2 - text.get_width() / 2,
+             screen_h * 0.1)
+        )
+
     def draw_title_screen(self, surface):
         """Draw the title/welcome screen with game name and controls.
 
@@ -191,7 +225,9 @@ class HUD:
             "WASD / Arrow Keys  —  Move",
             "Mouse  —  Aim",
             "Left Click / Space  —  Shoot",
-            "ESC - Pause"
+            "M - Toggle difficulty"
+            "ESC - Pause",
+            "Q - Quit"
         ]
         y = screen_h * 0.45
         for line in controls:

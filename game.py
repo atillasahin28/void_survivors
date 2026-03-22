@@ -42,6 +42,12 @@ class Game:
         pygame.display.set_caption("Void Survivors")
         self.clock = pygame.time.Clock()
         self.running = True
+
+        # Difficulty levels: "normal" (100 HP), "hard" (50 HP), "impossible" (1 HP)
+        self.difficulty_level = 0
+        self.difficulties = ["Normal", "Hard", "Impossible"]
+        self.difficulty = self.difficulties[self.difficulty_level]
+
         self._init_game_state()
 
     def _init_game_state(self):
@@ -62,6 +68,9 @@ class Game:
         self.state = "title"
         self.countdown_start = 0
         self.last_wave = 0
+
+        self._apply_difficulty()
+        print(self.difficulty, self.player.MAX_HEALTH)
 
     def run(self):
         """Execute the main game loop until the player quits."""
@@ -93,6 +102,11 @@ class Game:
                     if event.key == pygame.K_SPACE or event.key == pygame.K_RETURN:
                         self.state = "countdown"
                         self.countdown_start = time.time()
+                    if event.key == pygame.K_q:
+                        self.running = False
+                    if event.key == pygame.K_m:
+                        self._update_difficulty()
+                        self._apply_difficulty()
                 elif self.state == "game_over":
                     if event.key == pygame.K_r:
                         self._init_game_state()
@@ -296,6 +310,26 @@ class Game:
         self.powerups = [p for p in self.powerups if p.alive]
         self.particles = [p for p in self.particles if p.alive]
 
+    def _update_difficulty(self):
+        self.difficulty_level = (self.difficulty_level + 1) % 3
+        self.difficulty = self.difficulties[self.difficulty_level]
+        print(f"Difficulty set: {self.difficulty}")
+        self.hud.show_message(f"Difficulty set: {self.difficulty}")
+
+    def _apply_difficulty(self):
+        if self.difficulty == "Normal":
+            self.player.MAX_HEALTH = 100
+            self.player.max_health = 100
+            self.player.health = 100
+        if self.difficulty == "Hard":
+            self.player.MAX_HEALTH = 50
+            self.player.max_health = 50
+            self.player.health = 50
+        if self.difficulty == "Impossible":
+            self.player.MAX_HEALTH = 1
+            self.player.max_health = 1
+            self.player.health = 1
+
     def _render(self):
         """Draw everything to the screen."""
         self.screen.fill(self.BG_COLOR)
@@ -335,6 +369,8 @@ class Game:
                                  self.wave_manager.get_wave_number())
         else:
             self.hud.draw(self.screen, self.player, self.wave_manager.get_wave_number())
+
+        self.hud._draw_message(self.screen)
 
         pygame.display.flip()
 

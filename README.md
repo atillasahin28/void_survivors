@@ -31,6 +31,7 @@ You control a spaceship in a dark void. Enemies spawn in waves from the edges of
 | `ESC` | Pause the game |
 | `R` | Restart (paused / game over screen) |
 | `Q` | Quit (paused / game over screen) |
+| `M` | Toggle difficulty level |
 
 ## Powerups
 
@@ -50,6 +51,12 @@ Powerups drop randomly when you kill an enemy (30% chance):
 - **Blinking invincibility** after taking damage
 - **Pulsing powerups** with glow animation
 - **Fading wave announcements**
+
+## Difficulty levels
+
+- Normal: 100 HP
+- Hard: 50 HP
+- Impossible: 1 HP
 
 ## Installation
 
