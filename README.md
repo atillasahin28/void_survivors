@@ -28,8 +28,9 @@ You control a spaceship in a dark void. Enemies spawn in waves from the edges of
 | `D` / `→` | Move right |
 | **Mouse** | Aim direction |
 | **Left Click** / `Space` | Shoot |
-| `R` | Restart (game over screen) |
-| `Q` | Quit (game over screen) |
+| `ESC` | Pause the game |
+| `R` | Restart (paused / game over screen) |
+| `Q` | Quit (paused / game over screen) |
 
 ## Powerups
 
