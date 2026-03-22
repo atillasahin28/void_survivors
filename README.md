@@ -56,17 +56,13 @@ Powerups drop randomly when you kill an enemy (30% chance):
 
 - Python 3.8 or higher
 - pip (Python package manager)
+- pygame (installed via requirements.txt)
 
 ### Setup
 
 ```bash
 # Clone the repository
-git clone <your-repo-url>
-cd void_survivors
-
-# (Optional) Create a virtual environment
-python3 -m venv venv
-source venv/bin/activate
+git clone https://github.com/atillasahin28/void_survivors.git
 
 # Install dependencies
 pip install -r requirements.txt
@@ -75,6 +71,7 @@ pip install -r requirements.txt
 ### Run the game
 
 ```bash
+cd void_survivors
 python main.py
 ```
 
