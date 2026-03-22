@@ -285,6 +285,7 @@ class Game:
         self.camera.trigger_shake(15)
 
     def _on_paused(self):
+        """Trigger the paused state."""
         self.state = "paused"
 
     def _cleanup_dead(self):

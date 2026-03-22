@@ -286,7 +286,7 @@ class HUD:
         overlay.fill((0, 0, 0))
         surface.blit(overlay, (0, 0))
 
-        # Game Over text
+        # Paused text
         go_text = self.font_large.render("PAUSED", True, (255, 60, 60))
         surface.blit(go_text, (screen_w / 2 - go_text.get_width() / 2, screen_h / 3))
 
