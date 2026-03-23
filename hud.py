@@ -225,7 +225,7 @@ class HUD:
             "WASD / Arrow Keys  —  Move",
             "Mouse  —  Aim",
             "Left Click / Space  —  Shoot",
-            "M - Toggle difficulty"
+            "M - Toggle difficulty",
             "ESC - Pause",
             "Q - Quit"
         ]
